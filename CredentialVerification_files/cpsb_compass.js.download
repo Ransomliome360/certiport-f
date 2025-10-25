@@ -1,0 +1,42 @@
+var ITSBrowserStrategy = function () { }; if (ITSBrowserStrategy.prototype.isSecureBrowser = function () { try { return window.external.IsHybridSecureBrowser || window.external.IsSecureBrowser } catch (e) { } return !1 }, ITSBrowserStrategy.prototype.setSecurityEnabled = function (e) { if (e) try { window.external.EnableSecurity() } catch (e) { } else try { window.external.DisableSecurity() } catch (e) { } }, ITSBrowserStrategy.prototype.closeWindow = function () { try { window.external.CloseBrowser() } catch (e) { } }, ITSBrowserStrategy.prototype.getAppName = function () { return "ITS Secure Browser" }, !ITS) var ITS = {}; ITS.SecureBrowser = new ITSBrowserStrategy; var ITSiPadAppStrategy = function () { }; ITSiPadAppStrategy.prototype.isSecureBrowser = function () { try { return navigator.userAgent.toLowerCase().match("itsmobile") } catch (e) { } return !1 }, ITSiPadAppStrategy.prototype.setSecurityEnabled = function (e) { }, ITSiPadAppStrategy.prototype.closeWindow = function () { try { var e; if (void 0 !== window.plugins && void 0 !== window.plugins.itsUI && (e = window.plugins.itsUI), null != e) try { e.closeBrowser() } catch (e) { } } catch (e) { } }, ITSiPadAppStrategy.prototype.getAppName = function () { return "ITS iPad Secure Browser" }, ITSiPadAppStrategy.prototype.isPurchaseProhibited = function () { return !0 }, ITS.iPad = new ITSiPadAppStrategy; var DefaultStrategy = function () { }; if (DefaultStrategy.prototype.isSecureBrowser = function () { return !1 }, DefaultStrategy.prototype.closeWindow = function () { }, DefaultStrategy.prototype.getAppName = function () { }, DefaultStrategy.prototype.getAppVersion = function () { }, DefaultStrategy.prototype.isPurchaseProhibited = function () { return !1 }, DefaultStrategy.prototype.setSecurityEnabled = function (e) { }, !VUE) var VUE = {}; if (!client) var client = void 0; if (client) { var ABEBrowserStrategy = function () { }; ABEBrowserStrategy.prototype.isSecureBrowser = function () { return client.isSecureBrowser ? client.isSecureBrowser() : !0 === client.isSecureRenderingEngine }, ABEBrowserStrategy.prototype.closeWindow = client.closeWindow, ABEBrowserStrategy.prototype.getAppName = client.getAppName, ABEBrowserStrategy.prototype.getAppVersion = client.getAppVersion, ABEBrowserStrategy.prototype.isPurchaseProhibited = client.isPurchaseProhibited, ABEBrowserStrategy.prototype.setSecurityEnabled = client.setSecurityEnabled, VUE.BrowserLock = new ABEBrowserStrategy } else VUE.BrowserLock = new DefaultStrategy; var DeliveryBrowserStrategyChain = function () { }, deliveryBrowserStrategies = [], addBrowserStrategy = function (e, t) { e && e[t] && deliveryBrowserStrategies.push(e[t]) }; addBrowserStrategy(VUE, "BrowserLock"), addBrowserStrategy(ITS, "iPad"), addBrowserStrategy(ITS, "SecureBrowser"), DeliveryBrowserStrategyChain.prototype.isBrowserRunning = function () { for (var e = 0; e < deliveryBrowserStrategies.length; e++)try { if (deliveryBrowserStrategies[e].isSecureBrowser()) return !0 } catch (e) { } return !1 }, DeliveryBrowserStrategyChain.prototype.isPurchaseProhibited = function () { for (var e = 0; e < deliveryBrowserStrategies.length; e++)try { if (deliveryBrowserStrategies[e].isSecureBrowser() && deliveryBrowserStrategies[e].isPurchaseProhibited()) return !0 } catch (e) { } return !1 }, DeliveryBrowserStrategyChain.prototype.disableSecurity = function () { for (var e = 0; e < deliveryBrowserStrategies.length; e++)try { deliveryBrowserStrategies[e].isSecureBrowser() && deliveryBrowserStrategies[e].setSecurityEnabled(!1) } catch (e) { } }, DeliveryBrowserStrategyChain.prototype.enableSecurity = function () { for (var e = 0; e < deliveryBrowserStrategies.length; e++)try { deliveryBrowserStrategies[e].isSecureBrowser() && deliveryBrowserStrategies[e].setSecurityEnabled(!0) } catch (e) { } }, DeliveryBrowserStrategyChain.prototype.closeWindow = function () { for (var e = 0; e < deliveryBrowserStrategies.length; e++)try { deliveryBrowserStrategies[e].isSecureBrowser() && deliveryBrowserStrategies[e].closeWindow() } catch (e) { } }, DeliveryBrowserStrategyChain.prototype.getAppName = function () { for (var e = 0; e < deliveryBrowserStrategies.length; e++)try { if (deliveryBrowserStrategies[e].isSecureBrowser()) { var t = deliveryBrowserStrategies[e].getAppName(); if (t) return t } } catch (e) { } }, DeliveryBrowserStrategyChain.prototype.getAppVersion = function () { for (var e = 0; e < deliveryBrowserStrategies.length; e++)try { if (deliveryBrowserStrategies[e].isSecureBrowser()) { var t = deliveryBrowserStrategies[e].getAppVersion(); if (t) return t } } catch (e) { } };
+
+
+
+if (typeof DeliveryBrowserStrategyChain != 'undefined') {
+    deliveryBrowser = new DeliveryBrowserStrategyChain();
+}
+
+function isSBRunning() {
+    return (typeof deliveryBrowser != 'undefined' && deliveryBrowser.isBrowserRunning());
+}
+
+function sbStore(filename, data) {
+    var result = false;
+    try {
+        if (isSBRunning() && filename.length) {
+            result = external.Store(filename, data);
+        }
+    } catch (e) {alert(e);}
+    return result;
+}
+
+function sbRetrieve(filename) {
+    var filecontent = "";
+    try {
+        if (isSBRunning() && filename.length) {
+            filecontent = external.Retrieve(filename);
+        }
+    } catch (e) {alert(e);}
+    return filecontent;
+}
+
+function sbDownloadExam(testName, programID, languageCode) {
+    var result;
+    try {
+
+        result = external.SetProgramID(parseInt(programID));     
+        result = external.AppCheckIfFilesInstalled(testName, languageCode); 
+      
+    } catch (e) { alert(e); return false; }
+    return true;
+}

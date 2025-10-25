@@ -1,0 +1,79 @@
+body {
+}
+
+.icons {
+    float: right;
+    margin-right: 28px;
+    margin-top: 15px;
+}
+
+.textcomponents-left {
+    margin-top: 10px;
+    margin-left: 28px;
+}
+
+.textcomponents-middle {
+    margin-top: 10px;
+}
+
+#footer {
+    max-width: 1000px;
+    min-width: 900px;
+    /*height: 60px;*/
+    padding: 4px 0px;
+    background-color: #2e2e2e;
+    margin: auto;
+}
+
+    #footer img {
+        border: none;
+    }
+
+    #footer .plaintext {
+        color: white;
+    }
+
+    #footer .plaintext-light {
+        color: gray;
+    }
+
+    #footer .plaintext a:link, #footer .plaintext a:visited, #footer .plaintext a:active {
+        color: white;
+        text-decoration: underline;
+    }
+
+    #footer a:link, #footer a:visited, #footer a:active {
+        color: white;
+        text-decoration: none;
+    }
+
+    #footer .icons a:link {
+        color: white;
+        text-decoration: none;
+    }
+
+    #footer a:hover {
+        color: white;
+        text-decoration: underline;
+    }
+
+    /* Secure browser styles used for hiding content */
+    #footer .closeWindow {
+        text-align: center;
+        font-weight: bold;
+    }
+
+        #footer .closeWindow a:link, #footer .closeWindow a:visited, #footer .closeWindow a:active {
+            color: orange;
+            text-decoration: none;
+        }
+
+        #footer .closeWindow a:hover {
+            text-decoration: underline;
+        }
+
+        #footer .closeWindow .outOfTheWay {
+            display: none;
+            visibility: hidden;
+            clear: both;
+        }
