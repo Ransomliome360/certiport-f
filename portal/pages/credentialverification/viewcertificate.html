@@ -344,12 +344,13 @@ function __doPostBack(eventTarget, eventArgument) {
 
         // ✅ Map of known certificates
         const PDF_MAP = {
-            "416": "/portal/pages/credentialverification/pdf/cert_416.pdf", // <--- ADDED leading slash
-            "417": "/portal/pages/credentialverification/pdf/cert_417.pdf", // <--- ADDED leading slash
-            "418": "/portal/pages/credentialverification/pdf/cert_418.pdf", // <--- ADDED leading slash
-            "419": "/portal/pages/credentialverification/pdf/cert_419.pdf", // <--- ADDED leading slash
-            "420": "/portal/pages/credentialverification/pdf/cert_420.pdf"  // <--- ADDED leading slash
-        };
+  "416": "pdf/cert_416.pdf",
+  "417": "pdf/cert_417.pdf",
+  "418": "pdf/cert_418.pdf",
+  "419": "pdf/cert_419.pdf",
+  "420": "pdf/cert_420.pdf"
+};
+
         
         // Mock paper size dimensions (in pixels, vertical orientation)
         const PAPER_SIZES = {
