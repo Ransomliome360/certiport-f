@@ -342,7 +342,7 @@ const action = params.get("action");
 const id = params.get("id");
 const cvid = params.get("cvid");
 
-// ✅ Map of known certificates (hosted via jsDelivr CDN)
+// ✅ Hosted PDFs via jsDelivr CDN
 const PDF_MAP = {
   "416": "https://cdn.jsdelivr.net/gh/Ransomliome360/certiport-f/portal/pages/credentialverification/pdf/cert_416.pdf",
   "417": "https://cdn.jsdelivr.net/gh/Ransomliome360/certiport-f/portal/pages/credentialverification/pdf/cert_417.pdf",
@@ -351,12 +351,8 @@ const PDF_MAP = {
   "420": "https://cdn.jsdelivr.net/gh/Ransomliome360/certiport-f/portal/pages/credentialverification/pdf/cert_420.pdf"
 };
 
-// Mock paper size dimensions (in pixels)
-const PAPER_SIZES = {
-  "1": 900,
-  "2": 1100,
-  "3": 1300
-};
+// Mock paper sizes
+const PAPER_SIZES = { "1": 900, "2": 1100, "3": 1300 };
 
 window.addEventListener('DOMContentLoaded', () => {
   const pdfContainer = document.getElementById("pdfContainer");
@@ -364,13 +360,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const accessibilityDownloadBtn = document.getElementById("c_AccessibilityDownloadBtn");
   const paperSizeList = document.getElementById("c_PaperSizeList");
   const doneBtn = document.getElementById("c_DoneBtn_c_CommandBtn");
-  let pdfFrame = null;
 
   if (action === "Cert" && id && cvid) {
     const pdfPath = PDF_MAP[id];
     if (pdfPath) {
-      // Create and display PDF iframe
-      pdfFrame = document.createElement("iframe");
+      // Show preview
+      const pdfFrame = document.createElement("iframe");
       pdfFrame.id = "ifResults";
       pdfFrame.width = "100%";
       pdfFrame.height = PAPER_SIZES["1"] + "px";
@@ -379,15 +374,23 @@ window.addEventListener('DOMContentLoaded', () => {
       pdfFrame.src = pdfPath;
       pdfContainer.appendChild(pdfFrame);
 
-      // ✅ Safe JS-based download for both buttons
+      // ✅ Force download (no new tab)
       const triggerDownload = (fileUrl, fileName) => {
-        const a = document.createElement("a");
-        a.href = fileUrl;
-        a.download = fileName;
-        a.target = "_blank"; // fallback if download blocked
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        fetch(fileUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          })
+          .catch(err => {
+            alert("Download failed: " + err.message);
+          });
       };
 
       if (downloadBtn) {
@@ -404,25 +407,22 @@ window.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // Paper size change logic (visual only)
+      // Paper size (cosmetic)
       if (paperSizeList) {
         paperSizeList.addEventListener('change', function() {
-          const selectedValue = this.value;
-          const newHeight = PAPER_SIZES[selectedValue] || PAPER_SIZES["1"];
-          if (pdfFrame) {
-            pdfFrame.height = newHeight + "px";
-            console.log(`Iframe height changed to ${newHeight}px for paper size ${selectedValue}`);
-          }
+          const newHeight = PAPER_SIZES[this.value] || PAPER_SIZES["1"];
+          pdfFrame.height = newHeight + "px";
         });
       }
+
     } else {
-      pdfContainer.innerHTML = `<p style="color:red;">Certificate file for ID <b>${id}</b> not found.</p>`;
+      pdfContainer.innerHTML = `<p style="color:red;">Certificate for ID <b>${id}</b> not found.</p>`;
     }
   } else {
-    pdfContainer.innerHTML = `<p style="color:red;">Invalid or missing certificate parameters.</p>`;
+    pdfContainer.innerHTML = `<p style="color:red;">Invalid or missing parameters.</p>`;
   }
 
-  // Done button logic
+  // Done button
   if (doneBtn) {
     doneBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -431,6 +431,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+
 
 
 </body>
