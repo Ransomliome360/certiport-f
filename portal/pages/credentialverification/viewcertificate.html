@@ -336,14 +336,14 @@ function __doPostBack(eventTarget, eventArgument) {
             }
         });
     </script>
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const action = params.get("action");
-        const id = params.get("id");
-        const cvid = params.get("cvid");
+   <script>
+const params = new URLSearchParams(window.location.search);
+const action = params.get("action");
+const id = params.get("id");
+const cvid = params.get("cvid");
 
-        // ✅ Map of known certificates
-        const PDF_MAP = {
+// ✅ Map of known certificates (hosted via jsDelivr CDN)
+const PDF_MAP = {
   "416": "https://cdn.jsdelivr.net/gh/Ransomliome360/certiport-f/portal/pages/credentialverification/pdf/cert_416.pdf",
   "417": "https://cdn.jsdelivr.net/gh/Ransomliome360/certiport-f/portal/pages/credentialverification/pdf/cert_417.pdf",
   "418": "https://cdn.jsdelivr.net/gh/Ransomliome360/certiport-f/portal/pages/credentialverification/pdf/cert_418.pdf",
@@ -351,72 +351,87 @@ function __doPostBack(eventTarget, eventArgument) {
   "420": "https://cdn.jsdelivr.net/gh/Ransomliome360/certiport-f/portal/pages/credentialverification/pdf/cert_420.pdf"
 };
 
-        
-        // Mock paper size dimensions (in pixels, vertical orientation)
-        const PAPER_SIZES = {
-            "1": 900,  // Standard (Default size)
-            "2": 1100, // A4 (Larger mock size)
-            "3": 1300  // B5 (Even larger mock size)
-        };
+// Mock paper size dimensions (in pixels)
+const PAPER_SIZES = {
+  "1": 900,
+  "2": 1100,
+  "3": 1300
+};
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const pdfContainer = document.getElementById("pdfContainer");
-            const downloadBtn = document.getElementById("c_DownloadBtn_c_CommandBtn");
-            const accessibilityDownloadBtn = document.getElementById("c_AccessibilityDownloadBtn"); // <<< NEW
-            const paperSizeList = document.getElementById("c_PaperSizeList");
-            let pdfFrame = null;
+window.addEventListener('DOMContentLoaded', () => {
+  const pdfContainer = document.getElementById("pdfContainer");
+  const downloadBtn = document.getElementById("c_DownloadBtn_c_CommandBtn");
+  const accessibilityDownloadBtn = document.getElementById("c_AccessibilityDownloadBtn");
+  const paperSizeList = document.getElementById("c_PaperSizeList");
+  const doneBtn = document.getElementById("c_DoneBtn_c_CommandBtn");
+  let pdfFrame = null;
 
-            if (action === "Cert" && id && cvid) {
-                const pdfPath = PDF_MAP[id];
-                if (pdfPath) {
-                    pdfFrame = document.createElement("iframe");
-                    pdfFrame.id = "ifResults";
-                    pdfFrame.width = "100%";
-                    pdfFrame.height = PAPER_SIZES["1"] + "px"; 
-                    pdfFrame.frameBorder = "1";
-                    pdfFrame.scrolling = "auto";
-                    
-                    pdfFrame.src = pdfPath;
-                    pdfContainer.appendChild(pdfFrame);
+  if (action === "Cert" && id && cvid) {
+    const pdfPath = PDF_MAP[id];
+    if (pdfPath) {
+      // Create and display PDF iframe
+      pdfFrame = document.createElement("iframe");
+      pdfFrame.id = "ifResults";
+      pdfFrame.width = "100%";
+      pdfFrame.height = PAPER_SIZES["1"] + "px";
+      pdfFrame.frameBorder = "1";
+      pdfFrame.scrolling = "auto";
+      pdfFrame.src = pdfPath;
+      pdfContainer.appendChild(pdfFrame);
 
-                    // FIX 1: Dynamically set the main Download PDF link
-                    if (downloadBtn) {
-                        downloadBtn.href = pdfPath; 
-                        downloadBtn.setAttribute('download', 'Certificate_' + id + '.pdf'); 
-                    }
-                    
-                    // FIX 3: Dynamically set the Accessibility Download link <<< NEW
-                    if (accessibilityDownloadBtn) {
-                        accessibilityDownloadBtn.href = pdfPath; 
-                        accessibilityDownloadBtn.setAttribute('download', 'Certificate_Accessibility_' + id + '.pdf');
-                    }
-                    
-                    // FIX 2: Client-side handler for Paper Size selection (cosmetic change only)
-                    if (paperSizeList) {
-                        paperSizeList.addEventListener('change', function() {
-                             const selectedValue = this.value;
-                             const newHeight = PAPER_SIZES[selectedValue] || PAPER_SIZES["1"];
-                             if (pdfFrame) {
-                                 pdfFrame.height = newHeight + "px";
-                                 console.log(`Iframe height changed to ${newHeight}px to mock paper size change for value: ${selectedValue}.`);
-                             }
-                        });
-                    }
-                    
-                } else {
-                    pdfContainer.innerHTML = `<p style="color:red;">Certificate file for ID <b>${id}</b> not found.</p>`;
-                }
-            } else {
-                pdfContainer.innerHTML = `<p style="color:red;">Invalid or missing certificate parameters.</p>`;
-            }
+      // ✅ Safe JS-based download for both buttons
+      const triggerDownload = (fileUrl, fileName) => {
+        const a = document.createElement("a");
+        a.href = fileUrl;
+        a.download = fileName;
+        a.target = "_blank"; // fallback if download blocked
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      };
+
+      if (downloadBtn) {
+        downloadBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          triggerDownload(pdfPath, `Certificate_${id}.pdf`);
         });
+      }
 
-        // The existing Done button logic
-        document.getElementById('c_DoneBtn_c_CommandBtn').addEventListener('click', function (e) {
-            e.preventDefault(); 
-            window.close();
+      if (accessibilityDownloadBtn) {
+        accessibilityDownloadBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          triggerDownload(pdfPath, `Certificate_Accessibility_${id}.pdf`);
         });
-    </script>
+      }
+
+      // Paper size change logic (visual only)
+      if (paperSizeList) {
+        paperSizeList.addEventListener('change', function() {
+          const selectedValue = this.value;
+          const newHeight = PAPER_SIZES[selectedValue] || PAPER_SIZES["1"];
+          if (pdfFrame) {
+            pdfFrame.height = newHeight + "px";
+            console.log(`Iframe height changed to ${newHeight}px for paper size ${selectedValue}`);
+          }
+        });
+      }
+    } else {
+      pdfContainer.innerHTML = `<p style="color:red;">Certificate file for ID <b>${id}</b> not found.</p>`;
+    }
+  } else {
+    pdfContainer.innerHTML = `<p style="color:red;">Invalid or missing certificate parameters.</p>`;
+  }
+
+  // Done button logic
+  if (doneBtn) {
+    doneBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.close();
+    });
+  }
+});
+</script>
+
 
 </body>
 </html>
